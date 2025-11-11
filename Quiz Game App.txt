@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interactive Quiz Game</title>
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #111;
+  }
+
+  .quiz-container {
+    background: #fff;
+    border-radius: 1rem;
+    padding: 2rem;
+    width: 500px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  h1 {
+    text-align: center;
+    color: #4f46e5;
+    margin-bottom: 1rem;
+  }
+
+  .question {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .options {
+    margin-bottom: 1rem;
+  }
+
+  .options label {
+    display: block;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid #e5e7eb;
+    outline: none;
+  }
+
+  button {
+    background: #4f46e5;
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    font-size: 1rem;
+  }
+
+  button:hover {
+    background: #4338ca;
+  }
+
+  .result {
+    text-align: center;
+    font-size: 1.3rem;
+    margin-top: 1rem;
+    color: #111;
+  }
+
+  .hidden {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="quiz-container">
+  <h1>🎓 Interactive Quiz</h1>
+  <div id="quiz">
+    <div id="question-container"></div>
+    <button id="next-btn">Next</button>
+  </div>
+  <div id="result" class="result hidden"></div>
+</div>
+
+<script>
+  const quizData = [
+    {
+      type: 'single',
+      question: 'Which planet is known as the Red Planet?',
+      options: ['Earth', 'Mars', 'Jupiter', 'Venus'],
+      answer: 'Mars'
+    },
+    {
+      type: 'multiple',
+      question: 'Select all programming languages:',
+      options: ['Python', 'HTML', 'JavaScript', 'CSS'],
+      answer: ['Python', 'JavaScript']
+    },
+    {
+      type: 'fill',
+      question: 'What is the capital of France?',
+      answer: 'Paris'
+    },
+    {
+      type: 'single',
+      question: 'Which of these is NOT a primary color?',
+      options: ['Red', 'Blue', 'Green', 'Yellow'],
+      answer: 'Green'
+    },
+    {
+      type: 'fill',
+      question: 'What does “CPU” stand for?',
+      answer: 'Central Processing Unit'
+    }
+  ];
+
+  const questionContainer = document.getElementById('question-container');
+  const nextBtn = document.getElementById('next-btn');
+  const resultDiv = document.getElementById('result');
+
+  let currentQuestion = 0;
+  let score = 0;
+
+  function loadQuestion() {
+    const q = quizData[currentQuestion];
+    questionContainer.innerHTML = `
+      <div class="question">${q.question}</div>
+    `;
+
+    if (q.type === 'single') {
+      const optionsHTML = q.options.map(
+        opt => `<label><input type="radio" name="option" value="${opt}"> ${opt}</label>`
+      ).join('');
+      questionContainer.innerHTML += `<div class="options">${optionsHTML}</div>`;
+    } else if (q.type === 'multiple') {
+      const optionsHTML = q.options.map(
+        opt => `<label><input type="checkbox" name="option" value="${opt}"> ${opt}</label>`
+      ).join('');
+      questionContainer.innerHTML += `<div class="options">${optionsHTML}</div>`;
+    } else if (q.type === 'fill') {
+      questionContainer.innerHTML += `<input type="text" id="fillAnswer" placeholder="Type your answer here..." />`;
+    }
+
+    nextBtn.textContent = currentQuestion === quizData.length - 1 ? 'Finish' : 'Next';
+  }
+
+  function checkAnswer() {
+    const q = quizData[currentQuestion];
+    let userAnswer;
+
+    if (q.type === 'single') {
+      const selected = document.querySelector('input[name="option"]:checked');
+      if (!selected) return alert('Please select an answer!');
+      userAnswer = selected.value;
+      if (userAnswer === q.answer) score++;
+    }
+
+    else if (q.type === 'multiple') {
+      const selected = Array.from(document.querySelectorAll('input[name="option"]:checked')).map(el => el.value);
+      if (selected.length === 0) return alert('Please select at least one answer!');
+      if (JSON.stringify(selected.sort()) === JSON.stringify(q.answer.sort())) score++;
+    }
+
+    else if (q.type === 'fill') {
+      const userInput = document.getElementById('fillAnswer').value.trim();
+      if (!userInput) return alert('Please enter an answer!');
+      if (userInput.toLowerCase() === q.answer.toLowerCase()) score++;
+    }
+
+    currentQuestion++;
+    if (currentQuestion < quizData.length) {
+      loadQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  function showResult() {
+    document.getElementById('quiz').classList.add('hidden');
+    resultDiv.classList.remove('hidden');
+    resultDiv.innerHTML = `
+      🏁 Quiz Complete!<br>
+      Your Score: <strong>${score}</strong> / ${quizData.length}
+    `;
+  }
+
+  nextBtn.addEventListener('click', checkAnswer);
+
+  loadQuestion();
+</script>
+
+</body>
+</html>
